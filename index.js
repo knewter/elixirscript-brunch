@@ -1,5 +1,7 @@
 "use strict";
 
+var exec = require('child_process').exec;
+
 function ElixirScriptPlugin(config) {
 }
 
@@ -14,8 +16,10 @@ ElixirScriptPlugin.prototype.extension = "ex";
 // accepted that file for our plugin by checking `type`, `extension` and
 // `pattern`.
 ElixirScriptPlugin.prototype.compile = function processMarkers(params, callback) {
-  console.log(params.data);
-  callback(null, params);
+  exec("ex2js '" + params.data + "' -ex", function(error, stdout, stderr){
+    params.data = stdout;
+    callback(null, params);
+  });
 };
 
 module.exports = ElixirScriptPlugin;
