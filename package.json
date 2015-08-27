@@ -1,6 +1,6 @@
 {
   "name": "elixirscript-brunch",
-  "version": "0.0.2",
+  "version": "0.0.3",
   "description": "Adds ElixirScript support to brunch.",
   "author": "Josh Adams (http://elixirsips.com/)",
   "homepage": "https://github.com/knewter/elixirscript-brunch",
@@ -16,6 +16,7 @@
     "url": "git@github.com:knewter/elixirscript-brunch.git"
   },
   "dependencies": {
+    "babel-brunch": "^5.1.1"
   },
   "devDependencies": {
   }
