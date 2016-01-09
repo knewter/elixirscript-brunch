@@ -19,7 +19,7 @@ ElixirScriptPlugin.prototype.extension = "ex";
 // `pattern`.
 ElixirScriptPlugin.prototype.compile = function(params, callback) {
   var babelCompiler = this.babelCompiler;
-  exec("ex2js '" + params.data + "' -ex -o app", function(error, stdout, stderr){
+  exec("elixirscript '" + params.data + "' -ex -o app", function(error, stdout, stderr){
     params.data = stdout;
     babelCompiler.compile(params, callback);
   });
