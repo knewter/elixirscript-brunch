@@ -1,10 +1,13 @@
 "use strict";
 
 var exec = require('child_process').exec;
-var BabelCompiler = require('babel-brunch');
+var temp = require("temp").track();
+var rollup = require('rollup');
+var babel = require('babel-core');
 
 function ElixirScriptPlugin(config) {
-  this.babelCompiler = new BabelCompiler(config);
+  this.compiled = false;
+  this.config = config.plugins && config.plugins.elixirscript || {};
 }
 
 // Tell Brunch we are indeed a plugin for it
@@ -20,13 +23,35 @@ ElixirScriptPlugin.prototype.pattern = /\.ex(s|js)?/;
 // accepted that file for our plugin by checking `type`, `extension` and
 // `pattern`.
 ElixirScriptPlugin.prototype.compile = function(params, callback) {
-  var babelCompiler = this.babelCompiler;
+  var classScope = this;
 
-  exec("ex2js '" + params.data + "' -ex", function(error, stdout, stderr){
-    params.data = stdout;
-    babelCompiler.compile(params, callback);
+  if(classScope.compiled == false){
+    classScope.compiled = true;
+  }else if(classScope.compiled == true){
+    return callback(null, null);
+  }
+
+  temp.mkdir('elixirscript-brunch', function(err, dirPath) {
+    if(err){
+      return callback(err);
+    }
+
+    exec("elixirscript '" + classScope.config.path + "' -o '" + dirPath + "'", function(error, stdout, stderr){
+      if(error){
+        return callback(error);
+      }
+
+      rollup.rollup({
+        entry: dirPath + "/Elixir." + classScope.config.main + ".js"
+      }).then(function (bundle) {
+
+        var result = bundle.generate({ format: 'es6' });
+        result = babel.transform(result.code, { presets: ['es2015'] })
+        classScope.compiled = false;
+        return callback(null, result.code);
+      });
+    });
   });
 };
 
 module.exports = ElixirScriptPlugin;
-
