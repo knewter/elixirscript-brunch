@@ -51,22 +51,22 @@ ElixirScriptPlugin.prototype.stripTrailingSlash = function(str){
 ElixirScriptPlugin.prototype.debounce = function(func, wait){
   var timeout;
   var previousCallback = null;
-	return function(params, callback) {
+  return function(params, callback) {
 
     var later = function() {
-			timeout = null;
+      timeout = null;
       previousCallback = null;
       func(params, callback);
-		};
+    };
 
-		clearTimeout(timeout);
+    clearTimeout(timeout);
     if(previousCallback){
       previousCallback(null, null);
     }
 
     previousCallback = callback;
     timeout = setTimeout(later, wait);
-	};
+  };
 }
 
 ElixirScriptPlugin.prototype.doCompile = function(params, callback){
