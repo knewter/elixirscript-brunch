@@ -23,7 +23,7 @@ function ElixirScriptPlugin(config) {
     throw new Error("'outputFolder' required");
   }
 
-  this.config.inputFolder = this.stripTrailingSlash(this.config.inputFolder) + "/**/*.ex*";
+  this.config.inputFolder = this.stripTrailingSlash(this.config.inputFolder);
   this.config.outputFolder = this.stripTrailingSlash(this.config.outputFolder);
 
   this.compile = this.debounce((params, callback) => { this.doCompile(params, callback) }, 250);
