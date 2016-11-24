@@ -79,7 +79,7 @@ ElixirScriptPlugin.prototype.doCompile = function(params, callback){
 
     exec("elixirscript '" + inputFolder + "' -o '" + dirPath + "'", function(error, stdout, stderr){
       if(error){
-        return callback(error);
+        return callback(new Error(stdout));
       }
 
       rollup.rollup({
