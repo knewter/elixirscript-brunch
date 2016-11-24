@@ -83,7 +83,7 @@ ElixirScriptPlugin.prototype.doCompile = function(params, callback){
       }
 
       rollup.rollup({
-        entry: dirPath + "/Elixir." + mainModule + ".js"
+        entry: dirPath + "/app/Elixir." + mainModule + ".js"
       }).then(function (bundle) {
 
         var result = bundle.generate({ format: 'es6' });
