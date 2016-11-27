@@ -79,11 +79,11 @@ ElixirScriptPlugin.prototype.doCompile = function(params, callback){
 
     exec("elixirscript '" + inputFolder + "' -o '" + dirPath + "'", function(error, stdout, stderr){
       if(error){
-        return callback(error);
+        return callback(new Error(stdout));
       }
 
       rollup.rollup({
-        entry: dirPath + "/Elixir." + mainModule + ".js"
+        entry: dirPath + "/app/Elixir." + mainModule + ".js"
       }).then(function (bundle) {
 
         var result = bundle.generate({ format: 'es6' });
