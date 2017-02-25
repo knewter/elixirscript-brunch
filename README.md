@@ -4,7 +4,7 @@ This plugin for brunch adds support for ElixirScript files.
 
 It will look for files with the extensions `ex`, `exs`, or `exjs` in your watched paths
 
-It depends on the `elixirscript` binary being in your path. For more information check here: [elixirscript](https://github.com/bryanjos/elixirscript)
+It depends on the `elixirscript` binary being in your path. For more information check here: [elixirscript](https://github.com/elixirscript/elixirscript)
 
 elixirscript-brunch relies on the following options:
 
@@ -14,30 +14,19 @@ plugins: {
   elixirscript: {
     inputFolder: "web/static/exjs",
     outputFolder: "web/static/js",
-    mainModule: "MyApp",
-    convertToES5: false
+    format: "es",
+    configPath: "path/to/my/elixirscript.exs"
   }
 }
 ```
 
-`inputFolder` (required): This is the folder that your elixirscript code is located
+`inputFolder` (required if not specified in a config file): This is the folder that your elixirscript code is located
 
-`outputFolder` (required): This is the folder that the output will end up in.
+`outputFolder` (required if not specified in a config file): This is the folder that the output will end up in.
 
-`mainModule`  (required): The name of starting, or main, module in your elixirscript code.
-  i.e. if your main module is:
-  ```elixir
-  defmodule MyApp do
-    ...
-  end
-  ```
-  then `MyApp` is the name to use here. elixirscript-brunch uses rollup to
-  bundle the translated code together. Elixirscript's output names files with
-  the module name. The output will be the name of the main module. In this case the output
-  will be named "MyApp.js"
+`format`  (optional): The module format of the output. Defaults to "es"
 
-`convertToES5` (optional, defaults to false): Whether or not to transpile output to ES5 using babel and the
-//es2015 preset
+`configPath`  (optional): The path to your elixirscript.exs file. Defaults to current directory
 
 Usage with Phoenix:
   This is just an example of how you could use this plugin with Phoenix
@@ -53,8 +42,4 @@ Usage with Phoenix:
 
   2. Configure the elixirscript-brunch plugin as described above.
   Using the above settings, your elixirscript code will be in the `web/static/exjs` folder
-  and a file called `MyApp.js` will end up in your `web/static/js` folder.
-  Since we made sure in our previous step this plugin runs before the others
-  `MyApp.js` will be picked up by the remaining plugins in the pipeline for javascript.
-  You can change this by updating the configuration if, for instance you would prefer
-  not to output the file in to the `web/static/js` folder.
+  and output will end up in your `web/static/js` folder.
