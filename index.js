@@ -33,7 +33,7 @@ ElixirScriptPlugin.prototype.compile = function(file, callback) {
   return callback(null, "");
 };
 
-ElixirScriptPlugin.prototype.onCompile = function() {
+ElixirScriptPlugin.prototype.buildCommand = function() {
   var args = ["elixirscript"];
 
   if (this.config.inputFolder) {
@@ -53,13 +53,17 @@ ElixirScriptPlugin.prototype.onCompile = function() {
   args = args.concat(["-o", this.config.outputFolder]);
   args = args.concat(["-f", this.config.format]);
 
-  modules = this.config.jsModules.map(function(module) {
-    return "--js-module" + module.join(":");
+  var modules = this.config.jsModules.map(function(module) {
+    return "--js-module " + module.join(":");
   });
 
   args = args.concat(modules);
 
-  var command = args.join(" ");
+  return args.join(" ");
+};
+
+ElixirScriptPlugin.prototype.onCompile = function() {
+  var command = this.buildCommand();
   childProcess.execSync(command);
 };
 
