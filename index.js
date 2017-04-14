@@ -1,32 +1,18 @@
 "use strict";
 
-var exec = require('child_process').exec;
-var fs = require('fs');
-var temp = require("temp").track();
-var rollup = require('rollup');
-var babel = require('babel-core');
+var childProcess = require("child_process");
+var path = require("path");
 
 function ElixirScriptPlugin(config) {
+  var defaults = {
+    inputFolder: process.cwd(),
+    outputFolder: path.join(config.paths.public, "js"),
+    format: "umd",
+    jsModules: []
+  };
+
   var elixirscriptConfig = config.plugins && config.plugins.elixirscript || {};
-
-  this.config = Object.assign({ convertToES5: true }, elixirscriptConfig);
-
-  if(!this.config.inputFolder){
-    throw new Error("'inputFolder' required");
-  }
-
-  if(!this.config.mainModule){
-    throw new Error("'mainModule' required");
-  }
-
-  if(!this.config.outputFolder){
-    throw new Error("'outputFolder' required");
-  }
-
-  this.config.inputFolder = this.stripTrailingSlash(this.config.inputFolder);
-  this.config.outputFolder = this.stripTrailingSlash(this.config.outputFolder);
-
-  this.compile = this.debounce((params, callback) => { this.doCompile(params, callback) }, 250);
+  this.config = Object.assign({}, defaults, elixirscriptConfig);
 }
 
 // Tell Brunch we are indeed a plugin for it
@@ -38,70 +24,47 @@ ElixirScriptPlugin.prototype.type = "javascript";
 ElixirScriptPlugin.prototype.extension = "ex";
 ElixirScriptPlugin.prototype.pattern = /\.ex(s|js)?/;
 
-ElixirScriptPlugin.prototype.stripTrailingSlash = function(str){
-  var lastIndex = str.length - 1;
+ElixirScriptPlugin.prototype.stripTrailingSlash = function(str) {
+  const separatedPath = str.split(path.sep);
+  path.join.apply(path, separatedPath);
+};
 
-  if(str.substr(lastIndex) === '/') {
-      return str.substr(0, lastIndex);
-  }
+ElixirScriptPlugin.prototype.compile = function(file, callback) {
+  return callback(null, "");
+};
 
-  return str;
-}
+ElixirScriptPlugin.prototype.buildCommand = function() {
+  var args = ["elixirscript"];
 
-ElixirScriptPlugin.prototype.debounce = function(func, wait){
-  var timeout;
-  var previousCallback = null;
-  return function(params, callback) {
+  if (this.config.inputFolder) {
+    var input = [];
 
-    var later = function() {
-      timeout = null;
-      previousCallback = null;
-      func(params, callback);
-    };
-
-    clearTimeout(timeout);
-    if(previousCallback){
-      previousCallback(null, null);
+    if (Array.isArray(this.config.inputFolder)) {
+      input = this.config.inputFolder;
+    } else {
+      input = [this.config.inputFolder];
     }
 
-    previousCallback = callback;
-    timeout = setTimeout(later, wait);
-  };
-}
+    input = input.join(" ");
 
-ElixirScriptPlugin.prototype.doCompile = function(params, callback){
-  var inputFolder = this.config.inputFolder;
-  var mainModule = this.config.mainModule;
-  var convertToES5 = this.config.convertToES5;
-  var outputPath = this.config.outputFolder + "/" + mainModule + ".js";
+    args.push(input);
+  }
 
-  temp.mkdir('elixirscript-brunch', function(err, dirPath) {
+  args = args.concat(["-o", this.config.outputFolder]);
+  args = args.concat(["-f", this.config.format]);
 
-    exec("elixirscript '" + inputFolder + "' -o '" + dirPath + "'", function(error, stdout, stderr){
-      if(error){
-        return callback(new Error(stdout));
-      }
-
-      rollup.rollup({
-        entry: dirPath + "/app/Elixir." + mainModule + ".js"
-      }).then(function (bundle) {
-
-        var result = bundle.generate({ format: 'es6' });
-
-        if(convertToES5){
-          result = babel.transform(result.code, { presets: ['es2015'] })
-        }
-
-        fs.writeFile(outputPath, result.code, function (err) {
-          if (err){
-            return callback(err);
-          }
-
-          return callback(null, null);
-        });
-      });
-    });
+  var modules = this.config.jsModules.map(function(module) {
+    return "--js-module " + module.join(":");
   });
-}
+
+  args = args.concat(modules);
+
+  return args.join(" ");
+};
+
+ElixirScriptPlugin.prototype.onCompile = function() {
+  var command = this.buildCommand();
+  childProcess.execSync(command);
+};
 
 module.exports = ElixirScriptPlugin;
